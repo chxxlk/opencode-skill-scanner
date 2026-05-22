@@ -112,6 +112,7 @@ export default (async ({ directory }) => {
   if (!allSkills.length) return {}
 
   let lastUserText = ""
+  let lastInjected: { name: string; score: number; description: string }[] = []
 
   return {
     /**
@@ -155,6 +156,12 @@ export default (async ({ directory }) => {
 
         if (!scored.length) return
 
+        lastInjected = scored.map(x => ({
+          name: x.s.name,
+          score: x.score,
+          description: x.s.description,
+        }))
+
         const block = [
           "## Relevant Skills",
           ...scored
@@ -174,6 +181,28 @@ export default (async ({ directory }) => {
       } catch (e: any) {
         log(`[skill-scanner] Error: ${e.message}`)
       }
+    },
+
+    tool: {
+      last_injected_skills: {
+        description: "Show which skills were last auto-injected by the skill-scanner plugin and why",
+        inputSchema: { type: "object", properties: {} },
+        execute: async () => {
+          const text = lastUserText || "(none yet)"
+          if (!lastInjected.length) {
+            return `No skills matched for your last message.\n\nTriggered by: "${text}"`
+          }
+          const lines = lastInjected.map((s, i) =>
+            `  ${i + 1}. **${s.name}** (score: ${s.score}) — ${s.description}`
+          )
+          return [
+            `**Last injected skills:**`,
+            ...lines,
+            ``,
+            `Triggered by: "${text}"`,
+          ].join("\n")
+        },
+      },
     },
   }
 }) satisfies Plugin
