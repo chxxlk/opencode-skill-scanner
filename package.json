@@ -1,7 +1,7 @@
 {
   "name": "opencode-skill-scanner",
   "version": "1.0.0",
-  "description": "OpenCode plugin that automatically scans installed skills and injects relevant ones into the system prompt based on conversation context",
+  "description": "OpenCode plugin that automatically detects relevant skills from conversation context and injects them into the system prompt",
   "keywords": [
     "opencode",
     "plugin",
@@ -12,10 +12,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/chxxlk/auto-inject-skill.git"
+    "url": "https://github.com/chxxlk/opencode-skill-scanner.git"
   },
   "opencode": {
     "plugin": true
-  },
-  "devDependencies": {}
+  }
 }

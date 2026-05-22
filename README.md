@@ -1,6 +1,6 @@
 # opencode-skill-scanner
 
-**OpenCode plugin** that automatically detects relevant skills from your conversation context and injects them into the system prompt — no manual skill-loading needed.
+**OpenCode plugin** that automatically detects relevant skills from your conversation context and injects them into the system prompt — no manual `skill("name")` needed.
 
 ## How It Works
 
@@ -11,38 +11,41 @@ You type a message —→ Plugin scans your installed skills —→ Top 5 matche
                    against your message text
 ```
 
-Every time you send a message, the plugin:
+Every message turn:
 1. **Captures** your latest text
-2. **Scores** all installed skills using keyword + reverse-word matching
-3. **Injects** the top 5 matching skills into the system prompt as `## Relevant Skills`
+2. **Scores** all installed skills by keyword + reverse-word matching
+3. **Injects** the top 5 matches into the system prompt as `## Relevant Skills`
 
-The model sees the injected skills and can use their instructions without you having to explicitly `skill("name")` them.
+The model sees the injected skills and can use their instructions automatically — no manual skill-loading required.
 
 ## Installation
 
-### Via npm (recommended)
+### Auto-discover (easiest)
+
+Drop `skill-scanner.ts` into your project's `.opencode/plugin/` or `.opencode/plugins/` directory — OpenCode loads it automatically.
+
+### From GitHub (recommended)
 
 ```json
 // opencode.json
 {
-  "plugin": ["opencode-skill-scanner"]
+  "plugin": ["https://raw.githubusercontent.com/chxxlk/opencode-skill-scanner/main/skill-scanner.ts"]
 }
 ```
 
-### Local install
+### Local clone
 
-Clone or download, then:
+```bash
+git clone https://github.com/chxxlk/opencode-skill-scanner.git
+```
+
+Then in `opencode.json`:
 
 ```json
-// opencode.json
 {
   "plugin": ["./path/to/opencode-skill-scanner/skill-scanner.ts"]
 }
 ```
-
-### Auto-discovery
-
-Or just drop `skill-scanner.ts` into `.opencode/plugin/` or `.opencode/plugins/` — OpenCode auto-discovers plugins in those directories.
 
 ## What It Scans
 
@@ -56,7 +59,7 @@ The plugin looks for `SKILL.md` files in these locations:
 | Agents | `~/.agents/skills/` |
 | Claude Code | `~/.claude/skills/` |
 
-All installed skills are indexed at plugin init and matched on every message.
+All installed skills are indexed once at plugin init and scored on every message.
 
 ## Scoring Algorithm
 
@@ -64,9 +67,19 @@ All installed skills are indexed at plugin init and matched on every message.
 |---|---|---|
 | Skill name in your message | **+10** | saying "react" matches react-specialist |
 | Keywords from description | **+2 each** | "security audit" matches security-auditor |
-| Your words in description | **+2 each** | "docker build deploy" in message matches docker-expert |
+| Your words in description | **+2 each** | "docker build deploy" → docker-expert |
 
-Results are capped at the **top 5** skills per turn to keep the prompt lean.
+Capped at **top 5** per turn to keep the prompt lean.
+
+## See What Was Injected
+
+Ask in chat at any time:
+
+```
+What skills were injected?
+```
+
+The plugin exposes a `last_injected_skills` tool that returns the last matched skills, their scores, and what message triggered them — visible right in your conversation.
 
 ## Debugging
 
@@ -77,7 +90,7 @@ Logs are written to `/tmp/opencode-skill-scanner.log`:
 2026-05-21T12:34:58.123Z [skill-scanner] Injected: react-specialist, typescript-pro, frontend-developer
 ```
 
-Tail them live:
+Tail live:
 
 ```bash
 tail -f /tmp/opencode-skill-scanner.log
@@ -85,8 +98,8 @@ tail -f /tmp/opencode-skill-scanner.log
 
 ## Requirements
 
-- OpenCode with `experimental.chat.messages.transform` and `experimental.chat.system.transform` hook support (OpenCode 0.x+)
-- Skills installed via [awesome-opencode-skills](https://github.com/jshsakura/awesome-opencode-skills) or any `SKILL.md` files
+- OpenCode with `experimental.chat.messages.transform` and `experimental.chat.system.transform` hook support
+- Skills installed (e.g., via [awesome-opencode-skills](https://github.com/jshsakura/awesome-opencode-skills) or any `SKILL.md` files)
 
 ## License
 
